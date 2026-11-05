@@ -1,4 +1,4 @@
-name: HIGHFLY Skill Lab L21 · independent Pages deployment
+name: HIGHFLY Skill Lab · L21 stable + L22 preview
 
 on:
   push:
@@ -29,6 +29,13 @@ jobs:
           repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
           ref: dcb8d3fb7a3432ac948f71a4f6f88f40a7076a6c
           path: game
+          persist-credentials: false
+      - name: Checkout L22 preview from exact tested commit
+        uses: actions/checkout@v4
+        with:
+          repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
+          ref: 1e1da0649b7cc1f4e8043ec988581dabf7b68999
+          path: game22
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -70,6 +77,24 @@ jobs:
           # The source repo's public Actions run 42034980219 recorded success.
           # Pinning that exact SHA prevents deployment of untested branches.
           echo 'Approved L21 source commit: dcb8d3fb7a3432ac948f71a4f6f88f40a7076a6c'
+      - name: Validate isolated L22 flight-only AIM preview
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(git -C game22 rev-parse HEAD)" = "1e1da0649b7cc1f4e8043ec988581dabf7b68999"
+          cd game22
+          test -s docs/L22_VFX_AUDIT_AND_AERIAL_TARGETING.md
+          test -s src/skillslab/aerial-aim-l22.js
+          test -s src/skillslab/signature-vfx-l22.js
+          test -s src/skillslab/fireball-vfx-l22.js
+          test -s assets/models/player_barbarian.glb
+          test -s LICENSE
+          test -s PROVENANCE.md
+          node tests/p16-hit-confirm.test.mjs
+          node tests/p19-fury-skills.test.mjs
+          node tests/p20-static-lab.test.mjs
+          node tests/l22-aerial-vfx.test.mjs
+          ! find . -type f \( -iname '*SOURCE*.zip' -o -iname '*CraftPix*' \) | grep -q .
       - name: Prepare isolated static Pages tree
         shell: bash
         run: |
@@ -78,14 +103,21 @@ jobs:
           cp -a game/lab.html game/styles.css game/src game/lib game/assets game/LICENSE game/PROVENANCE.md site/
           cp game/lab.html site/index.html
           touch site/.nojekyll
+          mkdir -p site/l22
+          cp -a game22/lab.html game22/styles.css game22/src game22/lib game22/assets game22/LICENSE game22/PROVENANCE.md site/l22/
+          cp game22/lab.html site/l22/index.html
           test -s site/index.html
           test -s site/src/main.js
           test -s site/src/skillslab/boot.js
           test -s site/assets/models/player_barbarian.glb
+          test -s site/l22/index.html
+          test -s site/l22/src/skillslab/aerial-aim-l22.js
+          test -s site/l22/src/skillslab/boot.js
+          test -s site/l22/assets/models/player_barbarian.glb
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
-      - name: Deploy ONLY this independent repository's L21 Pages
+      - name: Deploy L21 ROOT unchanged plus L22 /l22/ preview
         id: deploy
         uses: actions/deploy-pages@v4
