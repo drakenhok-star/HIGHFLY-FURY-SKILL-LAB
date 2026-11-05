@@ -1,4 +1,4 @@
-name: HIGHFLY · SKILL LAB L26 — HUD EDITABLE + 15 VFX
+name: HIGHFLY · SKILL LAB L27 — HUD EDITABLE + 15 VFX
 on:
   push:
     branches: [main]
@@ -22,21 +22,21 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - name: Checkout ONLY the CI-validated L26 unified combat island
+      - name: Checkout ONLY the CI-validated L27 unified combat island
         uses: actions/checkout@v4
         with:
           repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
-          ref: 2378f189074891eb05f1186c6c30f8757c9bd88a
+          ref: 5ef91c3acb5c323f33d70f4103349d1581a1d87b
           path: game
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate L26 HUD ENFOCAR, 15 legal VFX, aerial rupture, one island and FURY
+      - name: Validate L27 HUD ENFOCAR, 15 legal VFX, aerial rupture, one island and FURY
         shell: bash
         run: |
           set -Eeuo pipefail
-          test "$(git -C game rev-parse HEAD)" = "2378f189074891eb05f1186c6c30f8757c9bd88a"
+          test "$(git -C game rev-parse HEAD)" = "5ef91c3acb5c323f33d70f4103349d1581a1d87b"
           cd game
           test -s LICENSE && test -s PROVENANCE.md
           test -s lab.html && test -s styles.css
@@ -51,7 +51,8 @@ jobs:
           test -s src/skillslab/rupture-state-l25.js
           test -s src/skillslab/claudecraft-vfx-l26.js
           test -s src/skillslab/skill-catalog-export-l26.js
-          test -s docs/L26_VFX_RESTORATION_HUD_AND_EXPORT.md
+          test -s tests/l27-dotless-profile-export.test.mjs
+          test -s docs/L27_VFX_RESTORATION_HUD_AND_EXPORT.md
           test -s docs/L25_VFX_DEPENDENCY_AUDIT_AND_AERIAL_RUPTURE.md
           find src -name '*.js' -type f -print0 | while IFS= read -r -d '' f; do
             node --input-type=module --check < "$f"
@@ -64,6 +65,7 @@ jobs:
           node tests/l24-unified-island.test.mjs
           node tests/l25-vfx-air-rupture.test.mjs
           node tests/l26-vfx-hud-export.test.mjs
+          node tests/l27-dotless-profile-export.test.mjs
           node scripts/audit_animation_p6.mjs
           ! find . -type f \( -iname '*SOURCE*.zip' -o -iname '*CraftPix*' \) | grep -q .
       - name: Make ONE static Pages tree (no /l21 /l22 /l23 duplicates)
@@ -82,6 +84,7 @@ jobs:
           test -s site/src/skillslab/rupture-state-l25.js
           test -s site/src/skillslab/claudecraft-vfx-l26.js
           test -s site/src/skillslab/skill-catalog-export-l26.js
+          test -s site/src/skillslab/skills-web.js
           test -s site/assets/models/dragon_evolved_quaternius.glb
           test -s site/assets/models/draugr_skeleton_warrior.glb
           ! test -e site/l22
@@ -91,7 +94,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
-      - name: Publish ONE L26 Pages, principal HIGHFLY remains untouched
+      - name: Publish ONE L27 Pages, principal HIGHFLY remains untouched
         id: deploy
         uses: actions/deploy-pages@v4
         with:
