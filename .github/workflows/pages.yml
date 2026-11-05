@@ -1,4 +1,4 @@
-name: HIGHFLY · SKILL LAB L24 — ONE ISLAND
+name: HIGHFLY · SKILL LAB L25 — 15 VFX + RUPTURA AÉREA
 on:
   push:
     branches: [main]
@@ -22,21 +22,21 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
-      - name: Checkout ONLY the tested L24 unified combat island
+      - name: Checkout ONLY the CI-validated L25 unified combat island
         uses: actions/checkout@v4
         with:
           repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
-          ref: 91034a900375670ba510497c0db839c06488a5b2
+          ref: 8c91759db5083daf0948529aa460e7594d11f447
           path: game
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate one island, dragon, three ground rigs, FURY combat, VFX, aim, licenses
+      - name: Validate L25 15 VFX, aerial rupture, one island, original FURY and licenses
         shell: bash
         run: |
           set -Eeuo pipefail
-          test "$(git -C game rev-parse HEAD)" = "91034a900375670ba510497c0db839c06488a5b2"
+          test "$(git -C game rev-parse HEAD)" = "8c91759db5083daf0948529aa460e7594d11f447"
           cd game
           test -s LICENSE && test -s PROVENANCE.md
           test -s lab.html && test -s styles.css
@@ -46,6 +46,10 @@ jobs:
           test -s src/skillslab/monster-focus-l23.js
           test -s src/skillslab/signature-vfx-l22.js
           test -s src/skillslab/fireball-vfx-l22.js
+          test -s src/skillslab/premium-vfx-l25.js
+          test -s src/skillslab/aerial-rupture-l25.js
+          test -s src/skillslab/rupture-state-l25.js
+          test -s docs/L25_VFX_DEPENDENCY_AUDIT_AND_AERIAL_RUPTURE.md
           find src -name '*.js' -type f -print0 | while IFS= read -r -d '' f; do
             node --input-type=module --check < "$f"
           done
@@ -55,6 +59,7 @@ jobs:
           node tests/p19-fury-skills.test.mjs
           node tests/l23-monster-focus.test.mjs
           node tests/l24-unified-island.test.mjs
+          node tests/l25-vfx-air-rupture.test.mjs
           node scripts/audit_animation_p6.mjs
           ! find . -type f \( -iname '*SOURCE*.zip' -o -iname '*CraftPix*' \) | grep -q .
       - name: Make ONE static Pages tree (no /l21 /l22 /l23 duplicates)
@@ -68,6 +73,9 @@ jobs:
           test -s site/index.html
           test -s site/src/skillslab/boot.js
           test -s site/src/skillslab/training-layout-l24.js
+          test -s site/src/skillslab/aerial-rupture-l25.js
+          test -s site/src/skillslab/premium-vfx-l25.js
+          test -s site/src/skillslab/rupture-state-l25.js
           test -s site/assets/models/dragon_evolved_quaternius.glb
           test -s site/assets/models/draugr_skeleton_warrior.glb
           ! test -e site/l22
@@ -77,7 +85,7 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
-      - name: Publish ONE L24 Pages, principal HIGHFLY remains untouched
+      - name: Publish ONE L25 Pages, principal HIGHFLY remains untouched
         id: deploy
         uses: actions/deploy-pages@v4
         with:
