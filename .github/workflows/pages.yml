@@ -1,12 +1,15 @@
-name: Publish isolated HIGHFLY Skill Lab
+name: HIGHFLY Skill Lab L21 · independent Pages deployment
 
 on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/pages.yml', 'README.md']
   workflow_dispatch:
     inputs:
       source_ref:
         description: 'Commit SHA or branch of HIGHFLY-ORIGIN-DEMO to deploy (must pass FURY tests)'
         required: true
-        default: 'p20-fury-p16-static-training-pages-20261105'
+        default: 'b12ebfc34f39b2cc7e0ca3017f9a126324e2bda8'
         type: string
 
 permissions:
@@ -30,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
-          ref: ${{ inputs.source_ref }}
+          ref: ${{ inputs.source_ref || 'b12ebfc34f39b2cc7e0ca3017f9a126324e2bda8' }}
           path: game
           persist-credentials: false
       - uses: actions/setup-node@v4
@@ -48,6 +51,7 @@ jobs:
           test -s src/skillslab/aim-guide-p16.js
           test -s src/skillslab/lab-vfx.js
           test -s tests/p20-static-lab.test.mjs
+          test -s scripts/p21-browser-smoke.mjs
           find src -name '*.js' -type f -print0 | while IFS= read -r -d '' file; do
             node --input-type=module --check < "$file"
           done
@@ -67,7 +71,9 @@ jobs:
           npm install --no-save --no-package-lock playwright-core@1.58.0
           command -v google-chrome || command -v chromium
           python3 -m http.server 8957 --bind 127.0.0.1 > /tmp/highfly-lab-http.log 2>&1 &
-          CHROME_PATH="$(command -v google-chrome || command -v chromium)" node scripts/p20-browser-smoke.mjs
+          # Simulate exact GitHub Pages root route, no source-repo write.
+          cp lab.html index.html
+          HF_LAB_ENTRY=/index.html CHROME_PATH="$(command -v google-chrome || command -v chromium)" node scripts/p21-browser-smoke.mjs
       - name: Prepare isolated static Pages tree
         shell: bash
         run: |
@@ -84,6 +90,6 @@ jobs:
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
-      - name: Deploy ONLY this independent repository's Pages
+      - name: Deploy ONLY this independent repository's L21 Pages
         id: deploy
         uses: actions/deploy-pages@v4
