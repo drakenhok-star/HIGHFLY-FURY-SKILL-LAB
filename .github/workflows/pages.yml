@@ -52,7 +52,7 @@ jobs:
           test -s src/skillslab/claudecraft-vfx-l26.js
           test -s src/skillslab/skill-catalog-export-l26.js
           test -s tests/l27-dotless-profile-export.test.mjs
-          test -s docs/L27_VFX_RESTORATION_HUD_AND_EXPORT.md
+          test -s docs/L26_VFX_RESTORATION_HUD_AND_EXPORT.md
           test -s docs/L25_VFX_DEPENDENCY_AUDIT_AND_AERIAL_RUPTURE.md
           find src -name '*.js' -type f -print0 | while IFS= read -r -d '' f; do
             node --input-type=module --check < "$f"
