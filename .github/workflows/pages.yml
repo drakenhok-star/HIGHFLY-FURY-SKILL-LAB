@@ -9,7 +9,7 @@ on:
       source_ref:
         description: 'Commit SHA or branch of HIGHFLY-ORIGIN-DEMO to deploy (must pass FURY tests)'
         required: true
-        default: 'b12ebfc34f39b2cc7e0ca3017f9a126324e2bda8'
+        default: 'dcb8d3fb7a3432ac948f71a4f6f88f40a7076a6c'
         type: string
 
 permissions:
@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
-          ref: ${{ inputs.source_ref || 'b12ebfc34f39b2cc7e0ca3017f9a126324e2bda8' }}
+          ref: ${{ inputs.source_ref || 'dcb8d3fb7a3432ac948f71a4f6f88f40a7076a6c' }}
           path: game
           persist-credentials: false
       - uses: actions/setup-node@v4
