@@ -1,4 +1,4 @@
-name: HIGHFLY Skill Lab · L21 stable + L22 preview
+name: HIGHFLY Skill Lab · L21 stable + L22 snapshot + L23 monster focus
 
 on:
   push:
@@ -36,6 +36,13 @@ jobs:
           repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
           ref: 1e1da0649b7cc1f4e8043ec988581dabf7b68999
           path: game22
+          persist-credentials: false
+      - name: Checkout L23 monster-focus from tested exact commit
+        uses: actions/checkout@v4
+        with:
+          repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
+          ref: b8fc8fd222e69f79757d209e2251e0e71e07e170
+          path: game23
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
@@ -95,6 +102,23 @@ jobs:
           node tests/p20-static-lab.test.mjs
           node tests/l22-aerial-vfx.test.mjs
           ! find . -type f \( -iname '*SOURCE*.zip' -o -iname '*CraftPix*' \) | grep -q .
+      - name: Validate L23 explicit monster selector and no ground auto-target
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          test "$(git -C game23 rev-parse HEAD)" = "b8fc8fd222e69f79757d209e2251e0e71e07e170"
+          cd game23
+          test -s src/skillslab/monster-focus-l23.js
+          test -s tests/l23-monster-focus.test.mjs
+          test -s assets/models/player_barbarian.glb
+          test -s LICENSE
+          test -s PROVENANCE.md
+          node tests/p15-finisher.test.mjs
+          node tests/p16-hit-confirm.test.mjs
+          node tests/p19-fury-skills.test.mjs
+          node tests/p20-static-lab.test.mjs
+          node tests/l23-monster-focus.test.mjs
+          ! find . -type f \( -iname '*SOURCE*.zip' -o -iname '*CraftPix*' \) | grep -q .
       - name: Prepare isolated static Pages tree
         shell: bash
         run: |
@@ -106,6 +130,9 @@ jobs:
           mkdir -p site/l22
           cp -a game22/lab.html game22/styles.css game22/src game22/lib game22/assets game22/LICENSE game22/PROVENANCE.md site/l22/
           cp game22/lab.html site/l22/index.html
+          mkdir -p site/l23
+          cp -a game23/lab.html game23/styles.css game23/src game23/lib game23/assets game23/LICENSE game23/PROVENANCE.md site/l23/
+          cp game23/lab.html site/l23/index.html
           test -s site/index.html
           test -s site/src/main.js
           test -s site/src/skillslab/boot.js
@@ -114,10 +141,13 @@ jobs:
           test -s site/l22/src/skillslab/aerial-aim-l22.js
           test -s site/l22/src/skillslab/boot.js
           test -s site/l22/assets/models/player_barbarian.glb
+          test -s site/l23/index.html
+          test -s site/l23/src/skillslab/monster-focus-l23.js
+          test -s site/l23/assets/models/player_barbarian.glb
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
           path: site
-      - name: Deploy L21 ROOT unchanged plus L22 /l22/ preview
+      - name: Publish L21 and L22 unchanged plus L23 /l23/ preview
         id: deploy
         uses: actions/deploy-pages@v4
