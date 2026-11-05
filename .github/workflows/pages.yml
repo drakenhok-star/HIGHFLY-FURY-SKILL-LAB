@@ -1,0 +1,89 @@
+name: Publish isolated HIGHFLY Skill Lab
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: 'Commit SHA or branch of HIGHFLY-ORIGIN-DEMO to deploy (must pass FURY tests)'
+        required: true
+        default: 'p20-fury-p16-static-training-pages-20261105'
+        type: string
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: independent-highfly-fury-skill-lab-pages
+  cancel-in-progress: false
+
+jobs:
+  verify-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout ONLY source lab branch / approved commit
+        uses: actions/checkout@v4
+        with:
+          repository: drakenhok-star/HIGHFLY-ORIGIN-DEMO
+          ref: ${{ inputs.source_ref }}
+          path: game
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate FURY P16 & isolated Skill Lab contracts
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd game
+          test -s LICENSE
+          test -s PROVENANCE.md
+          test -s assets/models/player_barbarian.glb
+          test -s src/skillslab/boot.js
+          test -s src/skillslab/aim-guide-p16.js
+          test -s src/skillslab/lab-vfx.js
+          test -s tests/p20-static-lab.test.mjs
+          find src -name '*.js' -type f -print0 | while IFS= read -r -d '' file; do
+            node --input-type=module --check < "$file"
+          done
+          node tests/p15-finisher.test.mjs
+          node tests/p15-interruption.test.mjs
+          node tests/p16-hit-confirm.test.mjs
+          node tests/p19-fury-skills.test.mjs
+          node tests/p20-static-lab.test.mjs
+          node scripts/audit_animation_p6.mjs
+          ! find . -type f \( -iname '*SOURCE*.zip' -o -iname '*CraftPix*' \) | grep -q .
+      - name: Mobile landscape browser smoke (simulated; not real phone)
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          cd game
+          printf '{"type":"module","private":true}\n' > package.json
+          npm install --no-save --no-package-lock playwright-core@1.58.0
+          command -v google-chrome || command -v chromium
+          python3 -m http.server 8957 --bind 127.0.0.1 > /tmp/highfly-lab-http.log 2>&1 &
+          CHROME_PATH="$(command -v google-chrome || command -v chromium)" node scripts/p20-browser-smoke.mjs
+      - name: Prepare isolated static Pages tree
+        shell: bash
+        run: |
+          set -Eeuo pipefail
+          mkdir -p site
+          cp -a game/lab.html game/styles.css game/src game/lib game/assets game/LICENSE game/PROVENANCE.md site/
+          cp game/lab.html site/index.html
+          touch site/.nojekyll
+          test -s site/index.html
+          test -s site/src/main.js
+          test -s site/src/skillslab/boot.js
+          test -s site/assets/models/player_barbarian.glb
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+      - name: Deploy ONLY this independent repository's Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
